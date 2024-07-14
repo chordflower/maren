@@ -1,0 +1,36 @@
+name: Test
+on:
+  workflow_dispatch:
+  push:
+    branches:
+    - develop
+  pull_request:
+    branches:
+    - develop
+jobs:
+  main:
+    name: Runs the tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: read
+      actions: read
+      checks: write
+    steps:
+      - name: "Checkout code"
+        uses: "actions/checkout@v4"
+      - uses: "actions/setup-node@v4"
+        with:
+          node-version: "latest"
+      - name: "Install dependencies and run tests"
+        run: |
+          corepack enable
+          yarn install
+          yarn test
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: ( success() || failure() ) && github.event_name != 'pull_request'
+        with:
+          name: "JEST Tests"
+          path: "jest-*.xml"
+          reporter: "jest-junit"
