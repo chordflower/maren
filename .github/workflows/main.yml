@@ -32,5 +32,5 @@ jobs:
         if: ( success() || failure() ) && github.event_name != 'pull_request'
         with:
           name: "JEST Tests"
-          path: "jest-*.xml"
+          path: "junit.xml"
           reporter: "jest-junit"
