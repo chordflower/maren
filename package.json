@@ -1,0 +1,151 @@
+{
+  "name": "maren",
+  "description": "A nestjs server for Boliden",
+  "version": "0.0.1",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git"
+  },
+  "keywords": [
+    "tasks",
+    "task management"
+  ],
+  "author": {
+    "name": "carddamom",
+    "email": "carddamom@tutanota.com"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=20.14.0",
+    "yarn": ">=4.2.2"
+  },
+  "scripts": {
+    "build": "yarn generate && yarn compile",
+    "clean": "shx rm -fr ./build ./dist",
+    "compile": "nest build",
+    "dist": "yarn clean && yarn build",
+    "format:check": "prettier . --check --cache --cache-location=./build/.prettier-cache",
+    "format": "prettier . --write --cache --cache-location=./build/.prettier-cache",
+    "generate": "genversion --esm --backtick --property version,name,license,description,author ./src/code/utils/package.ts",
+    "lint:fix": "eslint --no-color --fix --no-warn-ignored --report-unused-disable-directives-severity 0",
+    "lint": "eslint --no-color --no-warn-ignored --report-unused-disable-directives-severity 0",
+    "preinstall": "yarn generate",
+    "start:debug": "yarn clean && nest start --debug --watch",
+    "start:dev": "yarn clean && nest start --watch",
+    "start:prod": "yarn dist && node dist/main.js",
+    "start": "yarn clean && nest start",
+    "test:cov": "jest --coverage",
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@nestjs/common": "^10.3.10",
+    "@nestjs/core": "^10.3.10",
+    "@nestjs/platform-express": "^10.3.10",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "tslib": "^2.6.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.7.0",
+    "@jest/globals": "^29.7.0",
+    "@nestjs/cli": "^10.4.2",
+    "@nestjs/schematics": "^10.1.2",
+    "@nestjs/testing": "^10.3.10",
+    "@prettier/plugin-xml": "^3.4.1",
+    "@stylistic/eslint-plugin": "^2.3.0",
+    "@types/eslint-config-prettier": "^6.11.3",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.10",
+    "@types/shelljs": "^0",
+    "@types/supertest": "^6.0.2",
+    "eslint": "^9.7.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-jsdoc": "^48.7.0",
+    "genversion": "^3.2.0",
+    "jest": "^29.7.0",
+    "jest-html-reporter": "^3.10.2",
+    "jest-junit": "^16.0.0",
+    "prettier": "^3.3.3",
+    "prettier-plugin-toml": "^2.0.1",
+    "shelljs": "^0.8.5",
+    "shx": "^0.3.4",
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.2.2",
+    "typescript": "^5.5.3",
+    "typescript-eslint": "^7.16.0"
+  },
+  "engineStrict": true,
+  "private": true,
+  "prettier": {
+    "semi": false,
+    "printWidth": 120,
+    "tabWidth": 2,
+    "useTabs": false,
+    "singleQuote": true,
+    "trailingComma": "all",
+    "bracketSameLine": true,
+    "arrowParens": "always",
+    "endOfLine": "lf",
+    "plugins": [
+      "@prettier/plugin-xml",
+      "prettier-plugin-toml"
+    ]
+  },
+  "jest": {
+    "automock": false,
+    "bail": 1,
+    "collectCoverageFrom": [
+      "**/*.(t|j)s"
+    ],
+    "coverageProvider": "v8",
+    "coverageDirectory": "../coverage",
+    "errorOnDeprecated": true,
+    "injectGlobals": false,
+    "preset": "ts-jest/presets/js-with-babel-esm",
+    "maxWorkers": "40%",
+    "moduleDirectories": [
+      "node_modules"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "mts",
+      "cts",
+      "js",
+      "mjs",
+      "cjs",
+      "json"
+    ],
+    "modulePathIgnorePatterns": [
+      "<rootDir>/dist/"
+    ],
+    "reporters": [
+      [
+        "github-actions",
+        {
+          "silent": false
+        }
+      ],
+      "summary",
+      "jest-junit",
+      [
+        "./node_modules/jest-html-reporter",
+        {
+          "pageTitle": "Test Report",
+          "collapseSuitesByDefault": true,
+          "includeFailureMsg": true,
+          "includeSuiteFailure": true
+        }
+      ]
+    ],
+    "rootDir": "src",
+    "testEnvironment": "jest-environment-node",
+    "testMatch": [
+      "**/?(*.)+spec.ts"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/"
+    ]
+  },
+  "packageManager": "yarn@4.3.1"
+}
