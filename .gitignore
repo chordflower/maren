@@ -465,3 +465,5 @@ $RECYCLE.BIN/
 .idea
 *.iml
 eslint-results.sarif
+test-report.html
+junit.xml

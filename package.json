@@ -35,9 +35,9 @@
     "start:dev": "yarn clean && nest start --watch",
     "start:prod": "yarn dist && node dist/main.js",
     "start": "yarn clean && nest start",
-    "test:cov": "jest --coverage",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
-    "test": "jest"
+    "test:cov": "jest --coverage --passWithNoTests",
+    "test:e2e": "jest --config ./test/jest-e2e.json --passWithNoTests",
+    "test": "jest --passWithNoTests"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.10",
@@ -135,7 +135,7 @@
       "summary",
       "jest-junit",
       [
-        "./node_modules/jest-html-reporter",
+        "jest-html-reporter",
         {
           "pageTitle": "Test Report",
           "collapseSuitesByDefault": true,
