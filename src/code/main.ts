@@ -17,10 +17,19 @@
 
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module.js'
+import { ConfigService } from '@nestjs/config'
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule)
-  await app.listen(3000)
+  const app = await NestFactory.create(AppModule, { bufferLogs: true })
+
+  const configService = app.get(ConfigService)
+
+  const port = configService.get<number>('server.port', 28081)
+  const address = configService.get<string>('server.address', '127.0.0.1')
+
+  app.enableShutdownHooks()
+
+  await app.listen(port, address)
 }
 
 await bootstrap()
