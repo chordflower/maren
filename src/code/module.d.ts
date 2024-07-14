@@ -15,29 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Module } from '@nestjs/common'
-import { ConfigModule } from '@nestjs/config'
-import { each } from 'lodash-es'
-import toDotCase from 'to-dot-case'
-
-/**
- * This is the main app module
- */
-@Module({
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      cache: true,
-      expandVariables: true,
-      validate: (config: Record<string, any>) => {
-        const result: Record<string, any> = {}
-        // Turns a string from CAPITAL_CASE into capital.case (aka dot.case)
-        each(config, (value: any, key: string) => {
-          result[toDotCase(key)] = value
-        })
-        return result
-      },
-    }),
-  ],
-})
-export class AppModule {}
+declare module 'to-dot-case' {
+  export = toDotCase
+  declare function toDotCase(value: string): string
+}
