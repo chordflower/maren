@@ -29,6 +29,7 @@
     "generate": "genversion --esm --backtick --property version,name,license,description,author ./src/code/utils/package.ts",
     "lint:fix": "eslint --no-color --fix --no-warn-ignored --report-unused-disable-directives-severity 0",
     "lint": "eslint --no-color --no-warn-ignored --report-unused-disable-directives-severity 0",
+    "lint:github": "eslint --no-color --no-warn-ignored --report-unused-disable-directives-severity 0 --format @microsoft/eslint-formatter-sarif --output-file eslint-results.sarif",
     "preinstall": "yarn generate",
     "start:debug": "yarn clean && nest start --debug --watch",
     "start:dev": "yarn clean && nest start --watch",
@@ -49,6 +50,7 @@
   "devDependencies": {
     "@eslint/js": "^9.7.0",
     "@jest/globals": "^29.7.0",
+    "@microsoft/eslint-formatter-sarif": "^3.1.0",
     "@nestjs/cli": "^10.4.2",
     "@nestjs/schematics": "^10.1.2",
     "@nestjs/testing": "^10.3.10",

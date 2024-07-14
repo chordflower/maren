@@ -464,6 +464,4 @@ $RECYCLE.BIN/
 .yarn
 .idea
 *.iml
-
-# generated file
-package.ts
+eslint-results.sarif
