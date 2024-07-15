@@ -467,3 +467,4 @@ $RECYCLE.BIN/
 eslint-results.sarif
 test-report.html
 junit.xml
+build/.prettier-cache
