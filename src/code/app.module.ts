@@ -16,8 +16,10 @@
  */
 
 import { Module } from '@nestjs/common'
-import { ConfigModule } from '@nestjs/config'
+import { ConfigModule, ConfigService } from '@nestjs/config'
 import { each } from 'lodash-es'
+import { LoggerModule } from 'nestjs-pino'
+import { TransportTargetOptions } from 'pino'
 import toDotCase from 'to-dot-case'
 
 /**
@@ -36,6 +38,55 @@ import toDotCase from 'to-dot-case'
           result[toDotCase(key)] = value
         })
         return result
+      },
+    }),
+    LoggerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        // Stdout output is always on...
+        const targets: Array<TransportTargetOptions> = [
+          {
+            target: 'pino-pretty',
+            options: {
+              destination: 1,
+            },
+          },
+        ]
+
+        // If logtail is enabled, configure it
+        if ('true' === config.get<string>('logtail.enabled', 'false')) {
+          console.log('adding logtail')
+          targets.push({
+            level: 'info',
+            target: '@logtail/pino',
+            options: {
+              sourceToken: config.getOrThrow<string>('logtail.token'),
+            },
+          })
+        }
+
+        // If axiom is enabled, configure it
+        if ('true' === config.get<string>('axiom.enabled', 'false')) {
+          console.log('adding axiom')
+          targets.push({
+            level: 'info',
+            target: 'pino-axiom',
+            options: {
+              orgId: config.getOrThrow<string>('axiom.org.id'),
+              token: config.getOrThrow<string>('axiom.token'),
+              dataset: config.getOrThrow<string>('axiom.dataset'),
+            },
+          })
+        }
+
+        return {
+          pinoHttp: {
+            transport: {
+              targets: targets,
+            },
+          },
+        }
       },
     }),
   ],
