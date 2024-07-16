@@ -17,6 +17,7 @@
 
 import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
+import helmet from 'helmet'
 import { Logger } from 'nestjs-pino'
 import { AppModule } from './app.module.js'
 
@@ -24,6 +25,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true })
   const logger = app.get(Logger)
   app.useLogger(logger)
+  app.enableCors({
+    origin: true,
+  })
+  app.use(helmet())
 
   const configService = app.get(ConfigService)
 
