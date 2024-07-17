@@ -18,9 +18,11 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { each } from 'lodash-es'
+import { ClsModule } from 'nestjs-cls'
 import { LoggerModule } from 'nestjs-pino'
 import { TransportTargetOptions } from 'pino'
 import toDotCase from 'to-dot-case'
+import { v7 } from 'uuid'
 
 /**
  * This is the main app module
@@ -38,6 +40,17 @@ import toDotCase from 'to-dot-case'
           result[toDotCase(key)] = value
         })
         return result
+      },
+    }),
+    ClsModule.forRoot({
+      global: true,
+      middleware: {
+        mount: true,
+        generateId: true,
+        idGenerator: (req) => {
+          const result = (req.id as string | undefined) ?? (req.headers['X-Request-Id'] as string | undefined) ?? v7()
+          return result
+        },
       },
     }),
     LoggerModule.forRootAsync({
@@ -82,6 +95,7 @@ import toDotCase from 'to-dot-case'
 
         return {
           pinoHttp: {
+            genReqId: (req: any): string => req.id ?? req.headers['X-Request-Id'] ?? v7(),
             transport: {
               targets: targets,
             },

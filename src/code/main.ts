@@ -15,20 +15,46 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { fastifyHelmet as helmet } from '@fastify/helmet'
 import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
-import helmet from 'helmet'
+import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify'
 import { Logger } from 'nestjs-pino'
+import { v7 } from 'uuid'
 import { AppModule } from './app.module.js'
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true })
+  const app = await NestFactory.create<NestFastifyApplication>(
+    AppModule,
+    new FastifyAdapter({
+      requestIdHeader: 'X-Request-Id',
+      genReqId: (req: any): any => {
+        const existingID: string = req.id ?? req.headers['X-Request-Id'] ?? v7()
+        req.id = existingID
+        return existingID
+      },
+      logger: {
+        genReqId: (req: any): string => req.id ?? req.headers['X-Request-Id'] ?? v7(),
+        transport: {
+          targets: [
+            {
+              target: 'pino-pretty',
+              options: {
+                destination: 1,
+              },
+            },
+          ],
+        },
+      },
+    }),
+    { bufferLogs: true },
+  )
   const logger = app.get(Logger)
   app.useLogger(logger)
   app.enableCors({
     origin: true,
   })
-  app.use(helmet())
+  await app.register(helmet)
 
   const configService = app.get(ConfigService)
 
