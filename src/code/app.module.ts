@@ -69,7 +69,6 @@ import { v7 } from 'uuid'
 
         // If logtail is enabled, configure it
         if ('true' === config.get<string>('logtail.enabled', 'false')) {
-          console.log('adding logtail')
           targets.push({
             level: 'info',
             target: '@logtail/pino',
@@ -81,7 +80,6 @@ import { v7 } from 'uuid'
 
         // If axiom is enabled, configure it
         if ('true' === config.get<string>('axiom.enabled', 'false')) {
-          console.log('adding axiom')
           targets.push({
             level: 'info',
             target: 'pino-axiom',

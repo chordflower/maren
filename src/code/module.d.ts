@@ -19,3 +19,5 @@ declare module 'to-dot-case' {
   export = toDotCase
   declare function toDotCase(value: string): string
 }
+
+declare module 'ocsp'

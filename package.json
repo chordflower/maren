@@ -20,8 +20,9 @@
     "yarn": ">=4.2.2"
   },
   "scripts": {
-    "build": "yarn generate && yarn compile",
+    "build": "yarn generate && yarn compile && yarn copy",
     "clean": "shx rm -fr ./build ./dist",
+    "copy": "shx cp -u ./src/security/*.pem ./dist",
     "compile": "nest build",
     "dist": "yarn clean && yarn build",
     "format:check": "prettier . --check --cache --cache-location=./build/.prettier-cache",
@@ -49,6 +50,7 @@
     "lodash-es": "^4.17.21",
     "nestjs-cls": "^4.3.0",
     "nestjs-pino": "^4.1.0",
+    "ocsp": "^1.2.0",
     "pino": "^9.3.0",
     "pino-axiom": "^1.0.198",
     "pino-http": "^10.2.0",
