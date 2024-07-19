@@ -470,3 +470,4 @@ junit.xml
 build/.prettier-cache
 *.pem
 *.cnf
+maren.openapi.json

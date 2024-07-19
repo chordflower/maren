@@ -19,12 +19,16 @@ import { fastifyHelmet as helmet } from '@fastify/helmet'
 import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify'
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import 'dotenv/config'
-import { readFile } from 'fs/promises'
+import { readFile, writeFile } from 'fs/promises'
 import { Logger } from 'nestjs-pino'
 import * as ocsp from 'ocsp'
 import { v7 } from 'uuid'
+import { hideBin } from 'yargs/helpers'
+import yargs from 'yargs/yargs'
 import { AppModule } from './app.module.js'
+import { author, license, version } from './utils/package.js'
 
 async function bootstrap() {
   const fastifyAdapterOptions: any = {
@@ -109,4 +113,53 @@ async function bootstrap() {
   await app.listen(port, address)
 }
 
-await bootstrap()
+await yargs(hideBin(process.argv))
+  .usage('$0')
+  .command({
+    command: 'serve',
+    aliases: ['$0'],
+    describe: 'Runs the server',
+    handler: async () => {
+      await bootstrap()
+    },
+  })
+  .command({
+    command: 'openapi',
+    describe: 'Generates the openapi json',
+    builder: {
+      output: {
+        alias: 'o',
+        demandOption: true,
+        type: 'string',
+        normalize: true,
+        describe: 'The output file to use',
+      },
+    },
+    handler: async (args) => {
+      const app = await NestFactory.create<NestFastifyApplication>(
+        AppModule,
+        new FastifyAdapter({
+          logger: false,
+        }),
+        { logger: false },
+      )
+
+      const document = SwaggerModule.createDocument(
+        app,
+        new DocumentBuilder()
+          .setTitle('Maren API')
+          .setDescription('The maren API description')
+          .setVersion(version)
+          .setLicense(license, 'https://www.gnu.org/licenses/agpl-3.0.en.html')
+          .setContact(author.name, author.url, author.email)
+          .addTag('utils', 'Some utility operations')
+          .build(),
+        {
+          operationIdFactory: (_, method) => method,
+        },
+      )
+
+      await writeFile(args.output, JSON.stringify(document, undefined, 2))
+    },
+  })
+  .parse()

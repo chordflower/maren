@@ -2,7 +2,7 @@
   "name": "maren",
   "description": "A nestjs server for Boliden",
   "version": "0.0.1",
-  "license": "Apache-2.0",
+  "license": "AGPL-3.0",
   "repository": {
     "type": "git"
   },
@@ -12,6 +12,7 @@
   ],
   "author": {
     "name": "carddamom",
+    "url": "https://www.github.com/carddamom",
     "email": "carddamom@tutanota.com"
   },
   "type": "module",
@@ -47,6 +48,7 @@
     "@nestjs/config": "^3.2.3",
     "@nestjs/core": "^10.3.10",
     "@nestjs/platform-fastify": "^10.3.10",
+    "@nestjs/swagger": "^7.4.0",
     "@nestjs/throttler": "^6.0.0",
     "lodash-es": "^4.17.21",
     "nestjs-cls": "^4.3.0",
@@ -60,7 +62,8 @@
     "rxjs": "^7.8.1",
     "to-dot-case": "^1.0.0",
     "tslib": "^2.6.3",
-    "uuid": "^10.0.0"
+    "uuid": "^10.0.0",
+    "yargs": "^17.7.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.7.0",
