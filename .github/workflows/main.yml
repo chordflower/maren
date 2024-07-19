@@ -21,11 +21,12 @@ jobs:
         uses: 'actions/checkout@v4'
       - uses: 'actions/setup-node@v4'
         with:
-          node-version: 'latest'
+          node-version: 'lts/*'
       - name: 'Install dependencies and run tests'
         run: |
           corepack enable
           yarn install
+          yarn lint:github
           yarn test
       - name: Test Report
         uses: dorny/test-reporter@v1

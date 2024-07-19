@@ -15,23 +15,96 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { fastifyHelmet as helmet } from '@fastify/helmet'
 import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
+import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify'
+import 'dotenv/config'
+import { readFile } from 'fs/promises'
 import { Logger } from 'nestjs-pino'
+import * as ocsp from 'ocsp'
+import { v7 } from 'uuid'
 import { AppModule } from './app.module.js'
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true })
+  const fastifyAdapterOptions: any = {
+    requestIdHeader: 'X-Request-Id',
+    genReqId: (req: any): any => {
+      const existingID: string = req.id ?? req.headers['X-Request-Id'] ?? v7()
+      req.id = existingID
+      return existingID
+    },
+    logger: {
+      genReqId: (req: any): string => req.id ?? req.headers['X-Request-Id'] ?? v7(),
+      transport: {
+        targets: [
+          {
+            target: 'pino-pretty',
+            options: {
+              destination: 1,
+            },
+          },
+        ],
+      },
+    },
+  }
+  if ('true' === process.env['TLS_ENABLED']) {
+    fastifyAdapterOptions.https = {
+      key: (await readFile(new URL(process.env['TLS_KEY'] ?? '', import.meta.url), 'utf8')).replace(/\\n/g, '\n'),
+      cert: (await readFile(new URL(process.env['TLS_CERTIFICATE'] ?? '', import.meta.url), 'utf8')).replace(
+        /\\n/g,
+        '\n',
+      ),
+      minVersion: 'TLSv1.3',
+    }
+    fastifyAdapterOptions.http2 = true
+  }
+  const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter(fastifyAdapterOptions), {
+    bufferLogs: true,
+  })
   const logger = app.get(Logger)
   app.useLogger(logger)
+  app.enableCors({
+    origin: true,
+  })
+  await app.register(helmet)
 
   const configService = app.get(ConfigService)
 
   const port = configService.get<number>('server.port', 28081)
   const address = configService.get<string>('server.address', '127.0.0.1')
   logger.log(`The server url is http://${address}:${port}/`)
+  const cache = new ocsp.Cache()
 
   app.enableShutdownHooks()
+
+  if ('true' === configService.get<string>('tls.enabled', 'false')) {
+    logger.log('Enabling OCSP Request listener for TLS certificates')
+    app
+      .getHttpAdapter()
+      .getInstance()
+      .server.on('OCSPRequest', (cert, issuer, cb) => {
+        ocsp.getOCSPURI(cert, (err: any, uri: any) => {
+          if (err) return cb(err)
+          if (null === uri) return cb()
+
+          const req = ocsp.request.generate(cert, issuer)
+          cache.probe(req.id, (err2: any, cached: any) => {
+            if (err2) return cb(err2)
+            if (false !== cached) return cb(null, cached.response)
+
+            const options = {
+              url: uri,
+              ocsp: req.data,
+            }
+
+            cache.request(req.id, options, cb)
+            return null
+          })
+          return null
+        })
+      })
+  }
 
   await app.listen(port, address)
 }

@@ -8,6 +8,7 @@
 		"licenser.author": "carddamom",
 		"licenser.license": "AGPLv3",
 		"licenser.projectName": "maren",
-		"licenser.useSingleLineStyle": false
+		"licenser.useSingleLineStyle": false,
+		"editor.formatOnSave": true
 	}
 }
