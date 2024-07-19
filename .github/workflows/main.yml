@@ -27,6 +27,7 @@ jobs:
           corepack enable
           yarn install
           yarn lint:github
+          yarn test
       - name: Test Report
         uses: dorny/test-reporter@v1
         if: ( success() || failure() ) && github.event_name != 'pull_request'
