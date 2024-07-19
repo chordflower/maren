@@ -22,15 +22,34 @@ import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify
 import 'dotenv/config'
 import { readFile } from 'fs/promises'
 import { Logger } from 'nestjs-pino'
+import * as ocsp from 'ocsp'
 import { v7 } from 'uuid'
 import { AppModule } from './app.module.js'
-import https from 'https'
-import * as ocsp from 'ocsp'
 
 async function bootstrap() {
-  let httpsConfig: https.ServerOptions | undefined = undefined
+  const fastifyAdapterOptions: any = {
+    requestIdHeader: 'X-Request-Id',
+    genReqId: (req: any): any => {
+      const existingID: string = req.id ?? req.headers['X-Request-Id'] ?? v7()
+      req.id = existingID
+      return existingID
+    },
+    logger: {
+      genReqId: (req: any): string => req.id ?? req.headers['X-Request-Id'] ?? v7(),
+      transport: {
+        targets: [
+          {
+            target: 'pino-pretty',
+            options: {
+              destination: 1,
+            },
+          },
+        ],
+      },
+    },
+  }
   if ('true' === process.env['TLS_ENABLED']) {
-    httpsConfig = {
+    fastifyAdapterOptions.https = {
       key: (await readFile(new URL(process.env['TLS_KEY'] ?? '', import.meta.url), 'utf8')).replace(/\\n/g, '\n'),
       cert: (await readFile(new URL(process.env['TLS_CERTIFICATE'] ?? '', import.meta.url), 'utf8')).replace(
         /\\n/g,
@@ -38,34 +57,11 @@ async function bootstrap() {
       ),
       minVersion: 'TLSv1.3',
     }
+    fastifyAdapterOptions.http2 = true
   }
-  const app = await NestFactory.create<NestFastifyApplication>(
-    AppModule,
-    new FastifyAdapter({
-      https: httpsConfig ?? {},
-      http2: true,
-      requestIdHeader: 'X-Request-Id',
-      genReqId: (req: any): any => {
-        const existingID: string = req.id ?? req.headers['X-Request-Id'] ?? v7()
-        req.id = existingID
-        return existingID
-      },
-      logger: {
-        genReqId: (req: any): string => req.id ?? req.headers['X-Request-Id'] ?? v7(),
-        transport: {
-          targets: [
-            {
-              target: 'pino-pretty',
-              options: {
-                destination: 1,
-              },
-            },
-          ],
-        },
-      },
-    }),
-    { bufferLogs: true },
-  )
+  const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter(fastifyAdapterOptions), {
+    bufferLogs: true,
+  })
   const logger = app.get(Logger)
   app.useLogger(logger)
   app.enableCors({

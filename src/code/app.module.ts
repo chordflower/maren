@@ -17,12 +17,15 @@
 
 import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
-import { each } from 'lodash-es'
+import { APP_GUARD } from '@nestjs/core'
+import { seconds, ThrottlerGuard, ThrottlerModule, ThrottlerOptions } from '@nestjs/throttler'
+import { chain, each, isEmpty, isNil, trim } from 'lodash-es'
 import { ClsModule } from 'nestjs-cls'
 import { LoggerModule } from 'nestjs-pino'
 import { TransportTargetOptions } from 'pino'
 import toDotCase from 'to-dot-case'
 import { v7 } from 'uuid'
+import { UtilsModule } from './utils/utils.module.js'
 
 /**
  * This is the main app module
@@ -51,6 +54,74 @@ import { v7 } from 'uuid'
           const result = (req.id as string | undefined) ?? (req.headers['X-Request-Id'] as string | undefined) ?? v7()
           return result
         },
+      },
+    }),
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        const throttlers = new Array<ThrottlerOptions>()
+        if ('true' === config.get<string>('throttler.enabled', 'false')) {
+          chain(config.get<string>('throttler.thresholds', ''))
+            // Split the string by spaces
+            .split(' ')
+            // Filter out the empty entries
+            .filter((entry) => !isEmpty(entry))
+            // Trim empty spaces in the entries
+            .map((entry) => trim(entry))
+            // Parse each entry
+            .map((val) =>
+              chain(val)
+                // Split the entry by /
+                .split('/')
+                // Trim empty spaces in the entries
+                .map((entry) => trim(entry))
+                // Map each entry into the corresponding object (first one is name, second is ttl and third is limit)
+                .map((entry, index) => {
+                  switch (index) {
+                    case 0:
+                      return { name: entry }
+                    case 1:
+                      return { ttl: seconds(parseInt(entry)) }
+                    case 2:
+                      return { limit: parseInt(entry) }
+                    default:
+                      return undefined
+                  }
+                })
+                // Filter out undefined entries
+                .filter((entry) => !isNil(entry))
+                // Merge each entry into an object
+                .thru((entry) => {
+                  const res: { name: string | undefined; ttl: number | undefined; limit: number | undefined } = {
+                    name: undefined,
+                    ttl: undefined,
+                    limit: undefined,
+                  }
+                  each(entry, (ent) => {
+                    res.limit = ent.limit ?? res.limit
+                    res.name = ent.name ?? res.name
+                    res.ttl = ent.ttl ?? res.ttl
+                  })
+                  return res
+                })
+                .value(),
+            )
+            // Add each entry to the throttlers array
+            .each((entry) => {
+              throttlers.push({
+                name: entry.name ?? '',
+                limit: entry.limit as number,
+                ttl: entry.ttl as number,
+              })
+            })
+            .value()
+        }
+        return {
+          throttlers: throttlers,
+          errorMessage: 'Enhance your calm...',
+          skipIf: () => 'false' === config.get<string>('throttler.enabled', 'false'),
+        }
       },
     }),
     LoggerModule.forRootAsync({
@@ -101,6 +172,13 @@ import { v7 } from 'uuid'
         }
       },
     }),
+    UtilsModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}

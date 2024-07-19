@@ -1266,6 +1266,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@nestjs/throttler@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "@nestjs/throttler@npm:6.0.0"
+  peerDependencies:
+    "@nestjs/common": ^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0
+    "@nestjs/core": ^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0
+    reflect-metadata: ^0.1.13 || ^0.2.0
+  checksum: 10c0/8894eeba44143dc668c1e19ae48d4d4826b1a71dd229164ab18de6f696376b9c3865287a11bfdcb2ba044d60aef758d2ad60ea7e03184d57a3cb1931e4792c14
+  languageName: node
+  linkType: hard
+
 "@nodelib/fs.scandir@npm:2.1.5":
   version: 2.1.5
   resolution: "@nodelib/fs.scandir@npm:2.1.5"
@@ -5517,6 +5528,7 @@ __metadata:
     "@nestjs/platform-fastify": "npm:^10.3.10"
     "@nestjs/schematics": "npm:^10.1.2"
     "@nestjs/testing": "npm:^10.3.10"
+    "@nestjs/throttler": "npm:^6.0.0"
     "@prettier/plugin-xml": "npm:^3.4.1"
     "@stylistic/eslint-plugin": "npm:^2.3.0"
     "@types/eslint-config-prettier": "npm:^6.11.3"
